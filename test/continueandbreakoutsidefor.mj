@@ -1,0 +1,28 @@
+
+
+
+
+
+
+program P
+
+
+int niz[];
+int i;
+char j;
+int s;
+{
+
+
+
+void main() 
+char x;
+	{
+		i = 1;
+		j = 'a';
+
+		continue;
+		break;
+	} 
+	
+	}

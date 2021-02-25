@@ -1,0 +1,582 @@
+
+
+package rs.ac.bg.etf.pp1;
+
+import java_cup.runtime.*;
+import org.apache.log4j.*;
+import rs.ac.bg.etf.pp1.ast.*;
+
+parser code {:
+	boolean errorDetected;
+	Logger log = Logger.getLogger(getClass());
+   
+   
+    // slede redefinisani metodi za prijavu gresaka radi izmene teksta poruke
+     
+    public void report_fatal_error(String message, Object info) throws java.lang.Exception {
+      done_parsing();
+      report_error(message, info);
+    }
+  
+    public void syntax_error(Symbol cur_token) {
+        report_error("\nSintaksna greska", cur_token);
+    }
+  
+    public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
+        report_fatal_error("Fatalna greska, parsiranje se ne moze nastaviti", cur_token);
+    }
+
+    public void report_error(String message, Object info) {
+    errorDetected = true;
+    	StringBuilder msg = new StringBuilder(message); 
+    	if (info instanceof Symbol)
+            msg.append (" na liniji ").append(((Symbol)info).left);
+        log.error(msg.toString());
+    }
+
+
+:}
+
+
+init with {:
+	errorDetected = false;
+:}
+
+
+
+scan with {:
+	Symbol s = this.getScanner().next_token();
+	if (s != null && s.value != null) 
+		log.info(s.toString() + " " + s.value.toString());
+	return s;
+:}
+
+terminal PROG, LBRACE, RBRACE, SEMI, LPAREN, RPAREN, EQUAL, RETURN, PLUS, COMMA, PRINT, VOID, CONST, CLASS;
+terminal Integer NUMBER;
+terminal String  BOOLCONST;
+terminal String CHARCONST;
+terminal LEFT_SQUARE_BRAC;
+terminal RIGHT_SQUARE_BRAC;
+
+terminal LOGICAL_OR;
+
+
+terminal FOR;
+
+terminal READ;
+
+terminal EQUALITY;
+
+terminal DIFFERENCE;
+
+terminal LESS;
+
+terminal QUOTE;
+
+
+terminal LESS_OR_EQUAL;
+
+terminal GREATER;
+
+terminal GREATER_OR_EQUAL;
+
+terminal DIVIDE;
+
+terminal MOD;
+
+terminal String IDENT;
+terminal IF, ELSE;
+terminal EXTENDS;
+terminal ABSTRACT;
+terminal CONTINUE;
+terminal BREAK;
+terminal LOGICAL_AND;
+terminal MINUS;
+terminal MULTIPLY;
+terminal INCREMENT;
+terminal DECREMENT;
+terminal NEW;
+terminal FOREACH;
+terminal DOT;
+terminal COLON;
+
+terminal MULTIPLYEQUAL;
+terminal DIVIDEEQUAL;
+terminal MODEQUAL;
+
+terminal PLUSEQUAL, MINUSEQUAL;
+nonterminal  VarDeclList, MethodDeclList, VarDecl,  ConstDeclList, ConstDecl, SametypeConstantsNumber, SametypeConstantsIdent, SametypeConstantsBool, ClassDecl, ClassDeclContinue;
+nonterminal FormPars, StatementList, FormalParamList, FormalParamDecl, Statement;
+nonterminal  Addop,  ActualPars, ActualParamList;
+nonterminal Matched, Unmatched;
+nonterminal Sametype;
+nonterminal ClassDeclList;
+nonterminal AbstractClassDecl;
+nonterminal AbstractClassDeclList;
+
+nonterminal AbstractMethodDeclList;
+
+nonterminal TypeOrVoid;
+nonterminal  RelOp;
+nonterminal SemiFor;
+nonterminal MulopLeft, MulopRight;
+
+nonterminal AddopLeft;
+nonterminal AddopRight;
+nonterminal ClassVarDecl;
+
+nonterminal AssignOp;
+
+nonterminal AbstractMethodDecl;
+
+nonterminal DesignatorStatement;
+
+nonterminal DesignatorDot;
+
+nonterminal DesignatorBrackets;
+
+nonterminal Mulop;
+
+nonterminal VariableRandomDeclarations ;
+
+nonterminal AbstractInClassDeclarations;
+nonterminal ForInitialization;
+ nonterminal For;
+ nonterminal Else;
+ nonterminal RparenIf;
+ 
+ nonterminal ForIteration;
+ 
+ 
+ nonterminal ForCondition;
+ 
+ nonterminal TypeAndIdentInMethod;
+ 
+nonterminal AbstractClassStartDefinition;
+
+nonterminal AbstractClassStartDefinitionExtends;
+
+nonterminal Print;
+
+nonterminal NumberConsts;
+
+nonterminal Read;
+
+nonterminal ForEachStart;
+nonterminal RightAddop1;
+nonterminal RightMulop1;
+nonterminal rs.etf.pp1.symboltable.concepts.Obj Program, ProgName, Designator, MethodTypeName, MethodDecl, ClassIdentNoExtend, ClassIdentExtend, Term, Factor, Expr, ForEachIdent, ForEachDesignator, ExprInNewArray, TermListExt, ExprLeft, TermRight;
+
+nonterminal rs.etf.pp1.symboltable.concepts.Struct Type,  CondFact, CondTerm, Condition, ConditionORStart, CondFactInTerm;
+/*precedence right PLUSEQUAL; */
+Program ::= (Program) PROG ProgName VariableRandomDeclarations  LBRACE   MethodDeclList RBRACE;
+			
+			
+			ProgName ::= (ProgName) IDENT:progName;
+		
+	VariableRandomDeclarations ::=  
+								
+								VariableRandomDeclarations VarDeclList
+								|
+								VariableRandomDeclarations AbstractClassDeclList 
+								|
+								VariableRandomDeclarations ClassDeclList
+								|
+								VariableRandomDeclarations ConstDeclList 
+								|
+								;
+
+
+
+ConstDeclList ::= (ConstDeclNumber) CONST Type:constType SametypeConstantsNumber SEMI 
+					|
+					(ConstDeclString) CONST Type:constType SametypeConstantsIdent SEMI
+					| 
+					(ConstDeclBool) CONST Type:constType  SametypeConstantsBool SEMI
+					|
+					(ConstError) CONST error SEMI;
+
+
+SametypeConstantsNumber ::= (SametypeConstants1) IDENT:constantIdent EQUAL NUMBER:num COMMA SametypeConstantsNumber
+						|
+						(SametypeConstants2) IDENT:constantIdent EQUAL NUMBER:num ;
+						
+	
+
+ClassDeclList ::= (ClassDeclarationWithExtended) ClassIdentExtend  ClassDeclContinue
+			|
+			(ClassDeclarationWithNoExtended) ClassIdentNoExtend  ClassDeclContinue ;
+
+ClassIdentExtend ::= (ClassIdentExtend) CLASS IDENT:ident EXTENDS Type:t;
+
+ClassIdentNoExtend ::= (ClassIdentNoExtend) CLASS IDENT:ident;
+
+
+ClassDeclContinue ::= (ClassDeclContinue1Method) LBRACE ClassVarDecl LBRACE MethodDeclList RBRACE RBRACE
+						|
+						(ClassDeclContinueNoMethod) LBRACE ClassVarDecl RBRACE ;
+
+ClassVarDecl ::= (ClassVarDecl) VarDecl;
+
+						
+AbstractClassDeclList ::= (AbstractClassDeclarationWithExtended)
+													
+				 						
+			AbstractClassStartDefinitionExtends   LBRACE ClassVarDecl  LBRACE  AbstractInClassDeclarations  RBRACE RBRACE
+			|
+						(AbstractClassDeclarationNoExtended) AbstractClassStartDefinition LBRACE ClassVarDecl  LBRACE  AbstractInClassDeclarations  RBRACE RBRACE
+						|
+					(AbstractClassDeclarationWithExtendedNoMethods) AbstractClassStartDefinitionExtends  LBRACE ClassVarDecl RBRACE 
+					|
+					(AbstractClassDeclarationNoExtendedNoMethods) AbstractClassStartDefinition LBRACE ClassVarDecl RBRACE 
+			;
+
+AbstractClassStartDefinition ::= (AbstractClassStartDefinition) ABSTRACT CLASS IDENT:ident;
+
+AbstractClassStartDefinitionExtends ::= (AbstractClassStartDefinitionExtends)  ABSTRACT CLASS IDENT:ident EXTENDS Type:t;
+			AbstractInClassDeclarations ::= (AbstractClassWithAbstractMethod) AbstractInClassDeclarations AbstractMethodDecl:abstractMethod
+											|
+											(AbstractClassWithRegularMethod) AbstractInClassDeclarations MethodDecl:regularMethod
+											|
+											;
+											
+VarDeclList ::= (VarDeclList1) Type:varType Sametype:sameType SEMI
+				| 
+				(VarDeclErrorComma) error COMMA
+
+				| 
+				(VarDeclErrorSEMI) error SEMI
+				;
+			
+
+Sametype ::= (Sametyperecursive) IDENT:varName COMMA Sametype
+				|
+				(Sametypeident) IDENT:varName 
+				|
+				(SametypeIdentBrackets) IDENT:varName LEFT_SQUARE_BRAC RIGHT_SQUARE_BRAC
+				|
+				(SameTypeSquareBrackets) IDENT:varName LEFT_SQUARE_BRAC RIGHT_SQUARE_BRAC COMMA Sametype
+				;
+				
+				
+SametypeConstantsIdent ::= (SametypeConstantsIdent1) IDENT:constantIdent CHARCONST COMMA SametypeConstantsIdent
+ 					|
+ 					(SametypeConstantsIdent2) IDENT:constantIdent EQUAL CHARCONST;
+ 					
+ SametypeConstantsBool ::= (SametypeConstantsBool1) IDENT:constantIdent EQUAL BOOLCONST:boolconst COMMA SametypeConstantsBool 		  
+							|
+							(SametypeConstantsBool2)IDENT:constantIdent EQUAL BOOLCONST:boolconst ;
+				
+		
+							
+Type ::= (Type) IDENT:typeName;
+
+MethodDeclList ::= (MethodDeclarations) MethodDeclList MethodDecl
+				|
+				(NoMethodDecl) /* epsilon */
+				;
+				
+MethodDecl ::= (MethodDeclType) MethodTypeName LPAREN FormPars RPAREN VarDecl LBRACE StatementList RBRACE  ;
+	/*
+				|
+				(MethodDeclVoid) MethodTypeName LPAREN FormPars RPAREN VarDecl LBRACE StatementList RBRACE ;
+			*/
+				
+		MethodTypeName ::= (MethodTypeName) TypeOrVoid:t IDENT:methName ;
+		/*
+								|
+							(MethodTypeNameVoid) VOID IDENT:methName 
+							;
+		*/
+VarDecl ::= (VarDecl1) VarDecl VarDeclList   
+			|
+			;
+
+FormPars ::= (FormParams) FormalParamList
+		  |
+		  (NoFormParam) /* epsilon */
+		  ;
+		  
+FormalParamList ::= (FormalParamDecls) FormalParamDecl COMMA FormalParamList
+				|
+				(SingleFormalParamDecl) FormalParamDecl
+				;
+
+FormalParamDecl ::= (FormalParamDeclarations) Type IDENT:ident
+					|
+					(FormalParamDeclarationsArray) Type IDENT:ident LEFT_SQUARE_BRAC RIGHT_SQUARE_BRAC
+					|
+					(ErrorParam) error
+					;  
+				
+					
+				
+					
+StatementList ::= (Statements) Statement StatementList  
+				|
+				(NoStmt) /* epsilon */
+				;
+				
+Statement ::= (MatchedStmt) Matched
+		   |
+		   (UnmatchedStmt) Unmatched
+		  	|
+		  	(ForEachStatement) ForEachStart LPAREN ForEachIdent COLON ForEachDesignator RPAREN Statement 
+		  	|
+		  	
+		   (ForStatement) For LPAREN SEMI SEMI RPAREN Statement
+		   |
+		   
+		   (ForStatementInitializationMatched) For LPAREN ForInitialization SEMI SEMI RPAREN Statement
+		   |
+		 
+		   (ForStatementCondition) For LPAREN SEMI  ForCondition SEMI RPAREN Statement
+		   |
+		   (ForStatementIncrement) For LPAREN SEMI SEMI ForIteration RPAREN Statement
+		   |
+		   (ForStatementInitializationAndCondition) For LPAREN ForInitialization SEMI ForCondition SEMI RPAREN Statement
+		   |
+		   (ForStatementInitializationAndIncrement) For LPAREN ForInitialization SEMI SEMI ForIteration RPAREN Statement
+		   |
+		   (ForStatementConditionAndIncrement)  For LPAREN  SEMI ForCondition SEMI ForIteration RPAREN Statement
+		   |
+		   (ForStatementInitializationIncrementAndCondition)  For LPAREN ForInitialization SEMI ForCondition SEMI ForIteration RPAREN Statement 
+		   
+		   ; 
+					ForInitialization ::= (ForInit) DesignatorStatement ;
+					For ::= (For) FOR:f ;
+					
+				ForIteration ::= (ForIteration) DesignatorStatement;
+				
+				ForCondition ::= (ForCondition) Condition;
+				
+				ForEachStart ::= (ForEachStart) FOREACH;
+				
+				ForEachIdent ::= (ForEachIdent) IDENT;
+				
+				ForEachDesignator ::= (ForEachDesignator) Designator;
+					
+Unmatched ::= (UnmatchedIf) IF LPAREN Condition RparenIf Statement
+		 	|
+		 	(UnmatchedIfElse) IF LPAREN Condition RparenIf Matched Else Unmatched
+		 	;
+		 RparenIf ::= (RightParentInIF) RPAREN;
+		 Else ::= (ElseInIf) ELSE;
+
+Matched ::= (DesignatorStatement12345) DesignatorStatement SEMI 
+		  	|
+		   (ErrorStmt) error SEMI:l
+		   {: parser.report_error("Izvrsen oporavak do ; u liniji " + lleft, null);  :}
+		   |
+		   (PrintStmt) Print SEMI
+		   |
+		   (ReturnExpr) RETURN Expr:t SEMI
+		   |
+		   (ReturnNoExpr) RETURN SEMI
+		  
+		   |
+		    
+		   (ContinueStatement) CONTINUE SEMI
+		   
+		   |
+		   
+		  (BreakStatement) BREAK SEMI
+		  
+		  
+		  	|
+		  	
+		   (ReadStatement) Read LPAREN Designator RPAREN SEMI
+		   |
+
+		  
+		
+		   (MatchedStatementkdkdkdkd) IF LPAREN Condition RparenIf Matched Else Matched 
+		    |
+		    (StatementInBlock) LBRACE StatementList RBRACE ;
+		 
+		
+		
+			Print ::= (PrintExpression) PRINT LPAREN Expr RPAREN
+					|
+					(PrintExpAndNumberConst) PRINT LPAREN Expr COMMA NUMBER RPAREN
+					;
+		Read ::= (Read) READ ;
+/*					
+Expr ::= (AddExpr) Expr:te Addop Term:t
+	 |
+	 (TermExpr) Term:t
+	 |
+	 
+	 (MinusTermExpr) MINUS Term:t ;
+	 */
+	 
+	 
+	Expr ::= (ExprAddopRight) ExprLeft RightAddop1 Expr
+	|
+	(ExprLeftInAddopRight) ExprLeft
+	;
+	 ExprLeft ::= (AddExpr) ExprLeft:te AddopLeft Term:t
+	 |
+	 (TermExpr) Term:t
+	 |
+	 
+	 (MinusTermExpr) MINUS Term:t 
+	 
+	;
+	 
+/*
+Term ::= (TermOnlyFactor) Factor:t
+			| 
+			(TermRepetition) Term Mulop Factor 
+		
+			
+			;
+
+*/
+RightMulop1 ::= (RightMulop) MulopRight ;
+
+Term ::= (TermRightRepetition) TermRight RightMulop1 Term
+		|
+		(TermRightRepetition1) TermRight
+		;
+	TermRight ::= (TermOnlyFactor) Factor:t
+					|
+					(TermRepetition) TermRight MulopLeft Factor
+					;
+Factor ::= (Const) NUMBER
+		|
+		(Var) Designator:d
+		| 
+		(FuncCall) Designator:func LPAREN ActualPars RPAREN
+		|
+		(BoolConstants) BOOLCONST
+		|
+		(ExpressionInParanthesis) LPAREN Expr RPAREN
+		|
+		(NewTypeNoExpression) NEW Type:type
+		|
+		(NewTypeExpression) NEW Type:type ExprInNewArray
+		|
+		(CharConst) CHARCONST
+		;
+		
+		ExprInNewArray ::= (ExprInNewArray) LEFT_SQUARE_BRAC Expr RIGHT_SQUARE_BRAC ;
+ActualPars ::= (Actuals) ActualParamList
+			|
+			(NoActuals) /* epsilon */
+			;
+		
+ActualParamList ::= (ActualParams) ActualParamList COMMA Expr
+				|
+				(ActualParam) Expr ;
+				
+Designator ::=  (Designator) IDENT:desIdent DesignatorDot ;
+				
+	
+		DesignatorDot ::=(DesignatorDot1) DesignatorDot LEFT_SQUARE_BRAC Expr:e RIGHT_SQUARE_BRAC
+						|
+						(DesignatorDot2) DesignatorDot DOT IDENT:ident
+						|
+						;
+						/*
+					DesignatorBrackets ::= DesignatorBrackets LEFT_SQUARE_BRAC Expr RIGHT_SQUARE_BRAC
+						|
+						IDENT ;
+		
+						*/
+/*						
+Addop ::= (LeftAddop) AddopLeft
+			|
+			(RightAddop) AddopRight 
+			;
+*/											
+AddopLeft ::= (Plus) PLUS
+			|
+			(Minus) MINUS ;
+RightAddop1 ::= (RightAddop) AddopRight;
+	
+AddopRight ::= (PlusEqual) PLUSEQUAL
+				| 
+				(MinusEqual) MINUSEQUAL
+				;
+		
+Condition ::= (ConditionOR) ConditionORStart LOGICAL_OR Condition
+			|
+			(ConditionWithoutOR) CondTerm ;
+			
+ConditionORStart ::= (CondORStart)  CondTerm;
+
+CondTerm ::= (CondTermAnd) CondFactInTerm LOGICAL_AND CondTerm:ct
+			|
+			(CondTermFact) CondFact:cnd ;
+			
+CondFactInTerm ::= (CondFactInTerm)CondFact;
+CondFact ::= (CondFactRelop) CondFact:cndFct RelOp Expr:expr
+			|
+			(CondFactNoRelop) Expr ;
+			
+RelOp ::= (Equality) EQUALITY 
+			|
+		(Difference) DIFFERENCE 
+		|
+		(Less) LESS 
+			|
+		(Less_or_equal) LESS_OR_EQUAL 
+		|
+		(Greater) GREATER 
+		|
+		(Greater_or_equal) GREATER_OR_EQUAL ;
+			
+	
+	DesignatorStatement ::=(DesignatorIncrement) Designator:des INCREMENT
+							|
+							(DesignatorDecrement)Designator:des DECREMENT
+							|
+							(DesignatorAssignOp) Designator:des AssignOp Expr 
+							|
+							(DesignatorActualPars) Designator:des LPAREN ActualPars RPAREN
+							
+							;
+							
+							
+		AssignOp ::= (Equal) EQUAL
+						|
+						(RightAssignigWithAdding) AddopRight
+						|
+						(RightAssignigWithMul) MulopRight
+						 ;
+	/*
+	Mulop ::= (LeftMulop) MulopLeft
+				|
+				(RightMulop) MulopRight
+				
+				;
+				*/
+		MulopRight ::= (EqualMultiply) MULTIPLYEQUAL
+						|
+						(EqualDivide) DIVIDEEQUAL
+						|
+						(EqualMod) MODEQUAL
+						;
+	MulopLeft ::= (Multiply) MULTIPLY
+		|
+		(Divide) DIVIDE 
+		|
+		(Mod) MOD ;
+AbstractMethodDeclList ::= AbstractMethodDeclList AbstractMethodDecl
+						|
+						;
+												
+AbstractMethodDecl ::= (AbstractMethodDeclarationType) ABSTRACT TypeAndIdentInMethod LPAREN FormPars RPAREN SEMI 
+					
+					;
+				
+	TypeAndIdentInMethod ::= (TypeAndIdentInMethod)  TypeOrVoid:tov IDENT:methName ;
+	
+	TypeOrVoid ::=(TypeVoid) Type : t 
+				|
+				(VoidType) VOID ;
+	/*	
+								|
+								 (AbstractMethodVoid) ABSTRACT VOID IDENT:ident ;
+								 */

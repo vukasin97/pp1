@@ -1,0 +1,31 @@
+
+
+
+
+
+
+program P
+
+
+int niz[];
+int i;
+char j;
+int s;
+{
+
+int func(int x, int y)
+{
+
+return 1;
+}
+
+void main() 
+char x;
+	{
+		i = 1;
+		j = 'a';
+s = func(i,j);
+		
+	} 
+	
+	}

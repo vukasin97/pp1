@@ -1,0 +1,47 @@
+
+
+
+
+
+
+program P
+
+
+int niz[];
+int i;
+int d;
+char j;
+int s;
+int m;
+{
+
+int func(int x, int y)
+{
+
+return 1;
+}
+
+void main() 
+char x;
+	{
+		i = 1;
+		j = 'a';
+			niz = new int[10];
+		for(i = 0; i<10; i++) {
+			if (i == 2) break;
+		}
+		s = i + 10;
+	foreach(d: niz) {
+	print(d);
+	
+	}
+	print(len(niz));
+	func(1, 10);
+	niz[0] = 0;
+	niz[0]--;
+	niz[0]++;
+	niz[1] = niz[0] + 10;
+	
+	} 
+	
+	}

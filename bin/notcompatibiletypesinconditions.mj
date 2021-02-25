@@ -1,0 +1,23 @@
+
+
+
+
+
+
+program P
+
+
+int niz[];
+int i;
+char j;
+{
+void main() 
+char x;
+	{
+		i = 1;
+		j = 'a';
+if (i && j) print(10);
+		
+	} 
+	
+	}

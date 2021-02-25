@@ -1,0 +1,20 @@
+program P
+
+int i;
+int niz[];
+{
+void main() 
+char x;
+	{
+		
+	niz = new int[10];
+	
+	foreach(i: niz)
+	{
+		
+			i = 10;
+		}
+	
+		}
+		
+	} 
